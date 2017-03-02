@@ -8,17 +8,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Address;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
 
 /**
  * Inspired by the great pg_amqp. Seems there's no way to hook on the transactional behavior though (the equivalent of
@@ -48,7 +45,7 @@ public class RabbitMQPublisher {
 	private static Hashtable<Integer, FullAddress> state;
 	static {
 		// comment this out if you don't have the corresponding SYS:java.util.PropertyPermission
-		//System.setProperty("java.net.preferIPv4Stack", "true");
+		System.setProperty("java.net.preferIPv4Stack", "true");
 		state = new Hashtable<Integer, FullAddress>();
 	}
 
@@ -129,16 +126,9 @@ public class RabbitMQPublisher {
 			BrokerConnectionState connectionState = getConnectionState(brokerId);
 			connection = openConnection(connectionState);
 			channel = connection.createChannel();
-            Map<String, Object> headers = new HashMap<String, Object>();
-            headers.put("JMSType", "TextMessage");
 
 			// send the message
-			channel.basicPublish(exchange, routingKey, false, false,
-                new AMQP.BasicProperties.Builder()
-                    .contentType("text/plain")
-                    .headers(headers)
-                    .build(),
-                message.getBytes());
+			channel.basicPublish(exchange, routingKey, false, false, null, message.getBytes());
 
 			// remember the current broker used
 			state.put(brokerId, connectionState.currentAddress);
