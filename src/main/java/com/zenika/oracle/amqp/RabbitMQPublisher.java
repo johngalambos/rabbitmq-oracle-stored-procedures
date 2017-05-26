@@ -9,13 +9,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Address;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
+
 
 /**
  * Inspired by the great pg_amqp. Seems there's no way to hook on the transactional behavior though (the equivalent of
@@ -128,7 +132,10 @@ public class RabbitMQPublisher {
 			channel = connection.createChannel();
 
 			// send the message
-			channel.basicPublish(exchange, routingKey, false, false, null, message.getBytes());
+			channel.basicPublish(exchange, routingKey, false, false,
+                MessageProperties.PERSISTENT_TEXT_PLAIN,
+                message.getBytes());
+
 
 			// remember the current broker used
 			state.put(brokerId, connectionState.currentAddress);
